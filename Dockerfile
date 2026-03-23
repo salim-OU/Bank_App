@@ -1,4 +1,4 @@
-FROM maven:3.9.6-eclipse-temurin
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
 WORKDIR /app
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
@@ -7,7 +7,7 @@ RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
-ENV SPRING_PROFILES_ACTIVE=prod
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 10000
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=10000 -jar app.jar"]
+
